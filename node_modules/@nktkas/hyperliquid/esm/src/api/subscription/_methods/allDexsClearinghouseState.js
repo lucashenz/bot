@@ -1,0 +1,67 @@
+import * as v from "valibot";
+// ============================================================
+// API Schemas
+// ============================================================
+import { Address } from "../../_schemas.js";
+import { ClearinghouseStateResponse } from "../../info/_methods/clearinghouseState.js";
+/** Subscription to clearinghouse state events for all DEXs for a specific user. */
+export const AllDexsClearinghouseStateRequest = /* @__PURE__ */ (() => {
+    return v.pipe(v.object({
+        /** Type of subscription. */
+        type: v.pipe(v.literal("allDexsClearinghouseState"), v.description("Type of subscription.")),
+        /** User address. */
+        user: v.pipe(Address, v.description("User address.")),
+    }), v.description("Subscription to clearinghouse state events for all DEXs for a specific user."));
+})();
+/** Event of clearinghouse states for all DEXs for a specific user. */
+export const AllDexsClearinghouseStateEvent = /* @__PURE__ */ (() => {
+    return v.pipe(v.object({
+        /** User address. */
+        user: v.pipe(Address, v.description("User address.")),
+        /** Array of tuples of dex names and clearinghouse states. */
+        clearinghouseStates: v.pipe(v.array(v.tuple([
+            v.string(),
+            ClearinghouseStateResponse,
+        ])), v.description("Array of tuples of dex names and clearinghouse states.")),
+    }), v.description("Event of clearinghouse states for all DEXs for a specific user."));
+})();
+/**
+ * Subscribe to clearinghouse states for all DEXs for a specific user.
+ *
+ * @param config - General configuration for Subscription API subscriptions.
+ * @param params - Parameters specific to the API subscription.
+ * @param listener - A callback function to be called when the event is received.
+ *
+ * @returns A request-promise that resolves with a {@link ISubscription} object to manage the subscription lifecycle.
+ *
+ * @throws {ValiError} When the request parameters fail validation (before sending).
+ * @throws {TransportError} When the transport layer throws an error.
+ *
+ * @example
+ * ```ts
+ * import { WebSocketTransport } from "@nktkas/hyperliquid";
+ * import { allDexsClearinghouseState } from "@nktkas/hyperliquid/api/subscription";
+ *
+ * const transport = new WebSocketTransport(); // only `WebSocketTransport`
+ *
+ * const sub = await allDexsClearinghouseState(
+ *   { transport },
+ *   { user: "0x..." },
+ *   (data) => console.log(data),
+ * );
+ * ```
+ *
+ * @see https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/websocket/subscriptions
+ */
+export function allDexsClearinghouseState(config, params, listener) {
+    const payload = v.parse(AllDexsClearinghouseStateRequest, {
+        type: "allDexsClearinghouseState",
+        ...params,
+    });
+    return config.transport.subscribe(payload.type, payload, (e) => {
+        if (e.detail.user === payload.user) {
+            listener(e.detail);
+        }
+    });
+}
+//# sourceMappingURL=allDexsClearinghouseState.js.map

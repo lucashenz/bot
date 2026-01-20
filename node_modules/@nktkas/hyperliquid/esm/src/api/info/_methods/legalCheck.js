@@ -1,0 +1,62 @@
+import * as v from "valibot";
+// ============================================================
+// API Schemas
+// ============================================================
+import { Address } from "../../_schemas.js";
+/**
+ * Request legal verification status of a user.
+ */
+export const LegalCheckRequest = /* @__PURE__ */ (() => {
+    return v.pipe(v.object({
+        /** Type of request. */
+        type: v.pipe(v.literal("legalCheck"), v.description("Type of request.")),
+        /** User address. */
+        user: v.pipe(Address, v.description("User address.")),
+    }), v.description("Request legal verification status of a user."));
+})();
+/**
+ * Legal verification status for a user.
+ */
+export const LegalCheckResponse = /* @__PURE__ */ (() => {
+    return v.pipe(v.object({
+        /** Whether the user IP address is allowed. */
+        ipAllowed: v.pipe(v.boolean(), v.description("Whether the user IP address is allowed.")),
+        /** Whether the user has accepted the terms of service. */
+        acceptedTerms: v.pipe(v.boolean(), v.description("Whether the user has accepted the terms of service.")),
+        /** Whether the user is allowed to use the platform. */
+        userAllowed: v.pipe(v.boolean(), v.description("Whether the user is allowed to use the platform.")),
+    }), v.description("Legal verification status for a user."));
+})();
+/**
+ * Request legal verification status of a user.
+ *
+ * @param config - General configuration for Info API requests.
+ * @param params - Parameters specific to the API request.
+ * @param signal - {@link https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal | AbortSignal} to cancel the request.
+ *
+ * @returns Legal verification status for a user.
+ *
+ * @throws {ValiError} When the request parameters fail validation (before sending).
+ * @throws {TransportError} When the transport layer throws an error.
+ *
+ * @example
+ * ```ts
+ * import { HttpTransport } from "@nktkas/hyperliquid";
+ * import { legalCheck } from "@nktkas/hyperliquid/api/info";
+ *
+ * const transport = new HttpTransport(); // or `WebSocketTransport`
+ *
+ * const data = await legalCheck(
+ *   { transport },
+ *   { user: "0x..." },
+ * );
+ * ```
+ */
+export function legalCheck(config, params, signal) {
+    const request = v.parse(LegalCheckRequest, {
+        type: "legalCheck",
+        ...params,
+    });
+    return config.transport.request("info", request, signal);
+}
+//# sourceMappingURL=legalCheck.js.map

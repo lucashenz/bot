@@ -1,0 +1,65 @@
+import * as v from "valibot";
+// ============================================================
+// API Schemas
+// ============================================================
+import { Address, UnsignedInteger } from "../../_schemas.js";
+import { UserFillSchema } from "./_base/commonSchemas.js";
+/**
+ * Request user TWAP slice fills.
+ * @see https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint#retrieve-a-users-twap-slice-fills
+ */
+export const UserTwapSliceFillsRequest = /* @__PURE__ */ (() => {
+    return v.pipe(v.object({
+        /** Type of request. */
+        type: v.pipe(v.literal("userTwapSliceFills"), v.description("Type of request.")),
+        /** User address. */
+        user: v.pipe(Address, v.description("User address.")),
+    }), v.description("Request user TWAP slice fills."));
+})();
+/**
+ * Array of user's twap slice fills.
+ * @see https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint#retrieve-a-users-twap-slice-fills
+ */
+export const UserTwapSliceFillsResponse = /* @__PURE__ */ (() => {
+    return v.pipe(v.array(v.object({
+        /** TWAP fill record. */
+        fill: v.pipe(UserFillSchema, v.description("TWAP fill record.")),
+        /** ID of the TWAP. */
+        twapId: v.pipe(UnsignedInteger, v.description("ID of the TWAP.")),
+    })), v.description("Array of user's twap slice fills."));
+})();
+/**
+ * Request user TWAP slice fills.
+ *
+ * @param config - General configuration for Info API requests.
+ * @param params - Parameters specific to the API request.
+ * @param signal - {@link https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal | AbortSignal} to cancel the request.
+ *
+ * @returns Array of user's twap slice fills.
+ *
+ * @throws {ValiError} When the request parameters fail validation (before sending).
+ * @throws {TransportError} When the transport layer throws an error.
+ *
+ * @example
+ * ```ts
+ * import { HttpTransport } from "@nktkas/hyperliquid";
+ * import { userTwapSliceFills } from "@nktkas/hyperliquid/api/info";
+ *
+ * const transport = new HttpTransport(); // or `WebSocketTransport`
+ *
+ * const data = await userTwapSliceFills(
+ *   { transport },
+ *   { user: "0x..." },
+ * );
+ * ```
+ *
+ * @see https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint#retrieve-a-users-twap-slice-fills
+ */
+export function userTwapSliceFills(config, params, signal) {
+    const request = v.parse(UserTwapSliceFillsRequest, {
+        type: "userTwapSliceFills",
+        ...params,
+    });
+    return config.transport.request("info", request, signal);
+}
+//# sourceMappingURL=userTwapSliceFills.js.map

@@ -1,0 +1,48 @@
+import * as v from "valibot";
+// ============================================================
+// API Schemas
+// ============================================================
+import { ExplorerTransactionSchema } from "../../info/_methods/_base/commonSchemas.js";
+/** Subscription to explorer transaction events. */
+export const ExplorerTxsRequest = /* @__PURE__ */ (() => {
+    return v.pipe(v.object({
+        /** Type of subscription. */
+        type: v.pipe(v.literal("explorerTxs"), v.description("Type of subscription.")),
+    }), v.description("Subscription to explorer transaction events."));
+})();
+/** Event of array of transaction details. */
+export const ExplorerTxsEvent = /* @__PURE__ */ (() => {
+    return v.pipe(v.array(ExplorerTransactionSchema), v.description("Event of array of transaction details."));
+})();
+/**
+ * Subscribe to explorer transaction updates.
+ *
+ * @param config - General configuration for Subscription API subscriptions.
+ * @param listener - A callback function to be called when the event is received.
+ * @returns A request-promise that resolves with a {@link ISubscription} object to manage the subscription lifecycle.
+ *
+ * @throws {ValiError} When the request parameters fail validation (before sending).
+ * @throws {TransportError} When the transport layer throws an error.
+ *
+ * @example
+ * ```ts
+ * import { WebSocketTransport } from "@nktkas/hyperliquid";
+ * import { explorerTxs } from "@nktkas/hyperliquid/api/subscription";
+ *
+ * const transport = new WebSocketTransport({ url: "wss://rpc.hyperliquid.xyz/ws" });  // only `WebSocketTransport`; RPC endpoint
+ *
+ * const sub = await explorerTxs(
+ *   { transport },
+ *   (data) => console.log(data),
+ * );
+ * ```
+ *
+ * @see https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/websocket/subscriptions
+ */
+export function explorerTxs(config, listener) {
+    const payload = v.parse(ExplorerTxsRequest, { type: "explorerTxs" });
+    return config.transport.subscribe("_explorerTxs", payload, (e) => {
+        listener(e.detail);
+    });
+}
+//# sourceMappingURL=explorerTxs.js.map

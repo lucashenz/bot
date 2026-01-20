@@ -1,0 +1,92 @@
+import * as v from "valibot";
+// ============================================================
+// API Schemas
+// ============================================================
+import { Address, Hex, UnsignedInteger } from "../../_schemas.js";
+import { ErrorResponse, HyperliquidChainSchema, SignatureSchema, SuccessResponse } from "./_base/commonSchemas.js";
+/**
+ * Approve an agent to sign on behalf of the master account.
+ * @see https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/exchange-endpoint#approve-an-api-wallet
+ */
+export const ApproveAgentRequest = /* @__PURE__ */ (() => {
+    return v.pipe(v.object({
+        /** Action to perform. */
+        action: v.pipe(v.object({
+            /** Type of action. */
+            type: v.pipe(v.literal("approveAgent"), v.description("Type of action.")),
+            /** Chain ID in hex format for EIP-712 signing. */
+            signatureChainId: v.pipe(Hex, v.description("Chain ID in hex format for EIP-712 signing.")),
+            /** HyperLiquid network type. */
+            hyperliquidChain: v.pipe(HyperliquidChainSchema, v.description("HyperLiquid network type.")),
+            /** Agent address. */
+            agentAddress: v.pipe(Address, v.description("Agent address.")),
+            /** Agent name or null for unnamed agent. */
+            agentName: v.pipe(v.nullish(v.pipe(v.string(), v.minLength(1), v.maxLength(17)), null), v.description("Agent name or null for unnamed agent.")),
+            /** Nonce (timestamp in ms) used to prevent replay attacks. */
+            nonce: v.pipe(UnsignedInteger, v.description("Nonce (timestamp in ms) used to prevent replay attacks.")),
+        }), v.description("Action to perform.")),
+        /** Nonce (timestamp in ms) used to prevent replay attacks. */
+        nonce: v.pipe(UnsignedInteger, v.description("Nonce (timestamp in ms) used to prevent replay attacks.")),
+        /** ECDSA signature components. */
+        signature: v.pipe(SignatureSchema, v.description("ECDSA signature components.")),
+    }), v.description("Approve an agent to sign on behalf of the master account."));
+})();
+/**
+ * Successful response without specific data or error response.
+ * @see https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/exchange-endpoint#approve-an-api-wallet
+ */
+export const ApproveAgentResponse = /* @__PURE__ */ (() => {
+    return v.pipe(v.union([SuccessResponse, ErrorResponse]), v.description("Successful response without specific data or error response."));
+})();
+// ============================================================
+// Execution Logic
+// ============================================================
+import { executeUserSignedAction } from "./_base/execute.js";
+/** Schema for user-provided action parameters (excludes system fields). */
+const ApproveAgentParameters = /* @__PURE__ */ (() => {
+    return v.omit(v.object(ApproveAgentRequest.entries.action.entries), ["type", "signatureChainId", "hyperliquidChain", "nonce"]);
+})();
+/** EIP-712 types for the {@linkcode approveAgent} function. */
+export const ApproveAgentTypes = {
+    "HyperliquidTransaction:ApproveAgent": [
+        { name: "hyperliquidChain", type: "string" },
+        { name: "agentAddress", type: "address" },
+        { name: "agentName", type: "string" },
+        { name: "nonce", type: "uint64" },
+    ],
+};
+/**
+ * Approve an agent to sign on behalf of the master account.
+ *
+ * @param config - General configuration for Exchange API requests.
+ * @param params - Parameters specific to the API request.
+ * @param opts - Request execution options.
+ *
+ * @returns Successful response without specific data.
+ *
+ * @throws {ValiError} When the request parameters fail validation (before sending).
+ * @throws {TransportError} When the transport layer throws an error.
+ * @throws {ApiRequestError} When the API returns an unsuccessful response.
+ *
+ * @example
+ * ```ts
+ * import { HttpTransport } from "@nktkas/hyperliquid";
+ * import { approveAgent } from "@nktkas/hyperliquid/api/exchange";
+ * import { privateKeyToAccount } from "npm:viem/accounts";
+ *
+ * const wallet = privateKeyToAccount("0x..."); // viem or ethers
+ * const transport = new HttpTransport(); // or `WebSocketTransport`
+ *
+ * await approveAgent(
+ *   { transport, wallet },
+ *   { agentAddress: "0x...", agentName: "..." },
+ * );
+ * ```
+ *
+ * @see https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/exchange-endpoint#approve-an-api-wallet
+ */
+export function approveAgent(config, params, opts) {
+    const action = v.parse(ApproveAgentParameters, params);
+    return executeUserSignedAction(config, { type: "approveAgent", ...action }, ApproveAgentTypes, opts);
+}
+//# sourceMappingURL=approveAgent.js.map

@@ -1,0 +1,63 @@
+import * as v from "valibot";
+// ============================================================
+// API Schemas
+// ============================================================
+import { Address } from "../../_schemas.js";
+import { UserNonFundingLedgerUpdatesResponse } from "../../info/_methods/userNonFundingLedgerUpdates.js";
+/** Subscription to user non-funding ledger updates for a specific user. */
+export const UserNonFundingLedgerUpdatesRequest = /* @__PURE__ */ (() => {
+    return v.pipe(v.object({
+        /** Type of subscription. */
+        type: v.pipe(v.literal("userNonFundingLedgerUpdates"), v.description("Type of subscription.")),
+        /** User address. */
+        user: v.pipe(Address, v.description("User address.")),
+    }), v.description("Subscription to user non-funding ledger updates for a specific user."));
+})();
+/** Event of user non-funding ledger updates. */
+export const UserNonFundingLedgerUpdatesEvent = /* @__PURE__ */ (() => {
+    return v.pipe(v.object({
+        /** User address. */
+        user: v.pipe(Address, v.description("User address.")),
+        /** Array of user's non-funding ledger update. */
+        nonFundingLedgerUpdates: v.pipe(UserNonFundingLedgerUpdatesResponse, v.description("Array of user's non-funding ledger update.")),
+        /** Whether this is an initial snapshot. */
+        isSnapshot: v.pipe(v.optional(v.literal(true)), v.description("Whether this is an initial snapshot.")),
+    }), v.description("Event of user non-funding ledger updates."));
+})();
+/**
+ * Subscribe to non-funding ledger updates for a specific user.
+ *
+ * @param config - General configuration for Subscription API subscriptions.
+ * @param params - Parameters specific to the API subscription.
+ * @param listener - A callback function to be called when the event is received.
+ *
+ * @returns A request-promise that resolves with a {@link ISubscription} object to manage the subscription lifecycle.
+ *
+ * @throws {ValiError} When the request parameters fail validation (before sending).
+ * @throws {TransportError} When the transport layer throws an error.
+ *
+ * @example
+ * ```ts
+ * import { WebSocketTransport } from "@nktkas/hyperliquid";
+ * import { userNonFundingLedgerUpdates } from "@nktkas/hyperliquid/api/subscription";
+ *
+ * const transport = new WebSocketTransport(); // only `WebSocketTransport`
+ *
+ * const sub = await userNonFundingLedgerUpdates(
+ *   { transport },
+ *   { user: "0x..." },
+ *   (data) => console.log(data),
+ * );
+ * ```
+ *
+ * @see https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/websocket/subscriptions
+ */
+export function userNonFundingLedgerUpdates(config, params, listener) {
+    const payload = v.parse(UserNonFundingLedgerUpdatesRequest, { type: "userNonFundingLedgerUpdates", ...params });
+    return config.transport.subscribe(payload.type, payload, (e) => {
+        if (e.detail.user === payload.user) {
+            listener(e.detail);
+        }
+    });
+}
+//# sourceMappingURL=userNonFundingLedgerUpdates.js.map

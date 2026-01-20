@@ -1,0 +1,31 @@
+{
+  "name": "bot-hyperliquid",
+  "version": "1.0.0",
+  "description": "Bot de trading para Hyperliquid",
+  "main": "dist/bot.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/bot.js",
+    "dev": "tsx src/bot.ts",
+    "watch": "tsc --watch"
+  },
+  "keywords": [
+    "trading",
+    "bot",
+    "hyperliquid",
+    "crypto"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@nktkas/hyperliquid": "^0.30.2",
+    "dotenv": "^16.0.0",
+    "viem": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}
