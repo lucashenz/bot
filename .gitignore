@@ -1,2 +1,24 @@
+# 🗂️ `.gitignore` — Pronto para usar
+
+```gitignore
+# Node
+node_modules/
+dist/
+
+# Environment
 .env
-dist
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Misc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
